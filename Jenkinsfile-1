@@ -10,7 +10,7 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dckr_pat_g-yb-2MxRhF5c40dr6xLieQja1A')
+        DOCKERHUB_CREDENTIALS = credentials('devops-dockerhub-token')
     }
 
     stages {
@@ -45,11 +45,11 @@ pipeline {
                 sh 'docker push benjaminperez98/devops-web-project:v1'
             }
         }
-    }
 
-    post {
-        always {
-            sh 'docker logout'
+        stage('Docker Logout') {
+            steps {
+                sh 'docker logout'
+            }
         }
     }
 }
