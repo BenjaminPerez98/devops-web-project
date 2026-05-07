@@ -1,0 +1,55 @@
+pipeline {
+    agent {
+        node {
+            label 'dockerhost-build-server'
+        }
+    }
+
+    tools {
+        maven 'maven-3.9.6'
+    }
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dckr_pat_g-yb-2MxRhF5c40dr6xLieQja1A')
+    }
+
+    stages {
+        stage('Packaging') {
+            steps {
+                echo 'Packaging..'
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Copying war file') {
+            steps {
+                echo 'Copying war file..'
+                sh 'mv target/*.war .'
+            }
+        }
+
+        stage('build image') {
+            steps {
+                sh 'docker build -t benjaminperez98/devops-web-project:v1 --label devops-web-projectserver .'
+            }
+        }
+
+        stage('Docker Hub Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh 'docker push benjaminperez98/devops-web-project:v1'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }
+}
